@@ -21,6 +21,7 @@ Restart nginx
     
 Start node app
 
+    npm install
     cd /opt/nwpt
     npm start
 
