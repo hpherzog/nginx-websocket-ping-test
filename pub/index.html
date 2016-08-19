@@ -1,0 +1,84 @@
+<!Doctype html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+</head>
+<body>
+
+<div class="container">
+    <div class="page-header"><h1>nginx websocket test</h1></div>
+    <div class="btn-group" role="group">
+        <button id="socket" type="button" class="btn btn-primary">Open WebSocket</button>
+    </div>
+</div>
+<div id="mediaContainer" class="container">
+
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script type="text/javascript">
+
+    var ws = null;
+
+    function connectChannel(options) {
+
+        if(ws !== null) {
+            var onClose = ws.onclose;
+            ws.onopen = null;
+            ws.onmessage = null;
+            ws.onerror = null;
+            ws.onclose = function close(){
+                onClose.call(ws);
+                initChannel(options);
+            };
+            ws.close();
+        } else {
+            initChannel(options);
+        }
+    }
+
+    function initChannel(options) {
+
+        options = options || {};
+        options.onOpen = options.onOpen || function(){};
+        options.onMessage = options.onMessage || function(){};
+        options.onClose = options.onClose || function(){};
+        options.onError = options.onError || function(){};
+
+        ws = new WebSocket(options.url);
+        ws.onopen = function onOpen() {
+            console.log('WebSocket: opened');
+            options.onOpen();
+        };
+        ws.onmessage = function onMessage(message) {
+            var obj = JSON.parse(message.data);
+            console.log('WebSocket: received message', obj);
+            options.onObject(obj);
+        };
+        ws.onerror = function onError(err) {
+            console.error('WebSocket: error', err);
+            options.onError();
+        };
+        ws.onclose = function onClose() {
+            ws = null;
+            console.log('WebSocket: closed');
+            options.onClose();
+        }
+    }
+
+    $('#socket').click(function(event){
+        event.preventDefault();
+        connectChannel({
+            url: 'ws://192.168.99.100/nwpt'
+        });
+    });
+
+</script>
+</body>
+</html>
